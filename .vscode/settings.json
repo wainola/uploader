@@ -1,0 +1,15 @@
+{
+    "editor.rulers": [120],
+    "editor.tabSize": 2,
+    "search.exclude": {
+      "flow-typed": true
+    },
+    "eslint.autoFixOnSave": true,
+    "html.format.enable": false,
+    "editor.snippetSuggestions": "top",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    },
+    "editor.formatOnSave": true
+  }
+  
