@@ -4,15 +4,25 @@ const reducer = (state, action) => {
   switch (action.type) {
     case 'LOADING':
       const { payload: currentProgress } = action;
+      const difference = state.size - currentProgress;
       return {
         ...state,
         progress: currentProgress,
+        difference,
       };
     case 'FIRST_LOADING':
       const { payload: size } = action;
       return {
         ...state,
         size,
+      };
+    case 'LOAD_END':
+      const { payload: currentFinalProgress } = action;
+      const finalDifference = state.size - currentFinalProgress;
+      return {
+        ...state,
+        progress: currentFinalProgress,
+        difference: finalDifference,
       };
     default:
       break;
@@ -22,6 +32,8 @@ const reducer = (state, action) => {
 export default function Home() {
   const initState = {
     progress: 0,
+    difference: 0,
+    size: 0,
   };
 
   const [state, dispatcher] = useReducer(reducer, initState);
@@ -44,6 +56,10 @@ export default function Home() {
     });
     reader.addEventListener('loadend', (e) => {
       console.log(`${e.type} - ${e.loaded}`);
+      dispatcher({
+        type: 'LOAD_END',
+        payload: e.loaded,
+      });
     });
 
     reader.addEventListener('load', (e) => {
@@ -55,9 +71,13 @@ export default function Home() {
     }
   };
 
+  console.log({ ...state });
+
   const handleSubmit = (evt) => {
     evt.preventDefault();
   };
+
+  const renderProgressBar = () => {};
 
   return (
     <div className="flex flex-col h-screen ml-8 mr-8">
