@@ -3,26 +3,47 @@ import React, { useReducer } from 'react';
 const reducer = (state, action) => {
   switch (action.type) {
     case 'LOADING':
-      const { payload: currentProgress } = action;
-      const difference = state.size - currentProgress;
+      const {
+        payload: { currentProgress, size },
+      } = action;
+      const difference = state.files[size].size - currentProgress;
       return {
         ...state,
-        progress: currentProgress,
-        difference,
+        files: {
+          ...state.files,
+          [size]: {
+            ...state.files[size],
+            progress: currentProgress,
+            difference,
+          },
+        },
       };
     case 'FIRST_LOADING':
-      const { payload: size } = action;
+      const { payload: filesData } = action;
       return {
         ...state,
-        size,
+        files: {
+          ...state.files,
+          [filesData.size]: { ...filesData },
+        },
       };
     case 'LOAD_END':
-      const { payload: currentFinalProgress } = action;
-      const finalDifference = state.size - currentFinalProgress;
+      const {
+        payload: { currentProgress: currentFinalProgress, size: finalSize },
+      } = action;
+      const finalDifference =
+        state.files[finalSize].size - currentFinalProgress;
+      console.log('STATEEEE======================', finalDifference);
       return {
         ...state,
-        progress: currentFinalProgress,
-        difference: finalDifference,
+        files: {
+          ...state.files,
+          [finalSize]: {
+            ...state.files[finalSize],
+            progress: currentFinalProgress,
+            difference: finalDifference,
+          },
+        },
       };
     default:
       break;
@@ -31,9 +52,7 @@ const reducer = (state, action) => {
 
 export default function Home() {
   const initState = {
-    progress: 0,
-    difference: 0,
-    size: 0,
+    files: {},
   };
 
   const [state, dispatcher] = useReducer(reducer, initState);
@@ -43,56 +62,69 @@ export default function Home() {
       target: { files },
     } = evt;
 
-    dispatcher({ type: 'FIRST_LOADING', payload: files[0].size });
+    const filesArray = Array.from(files);
 
-    const reader = new FileReader();
-
-    reader.addEventListener('progress', (e) => {
-      console.log(`${e.type} - ${e.loaded}`);
+    filesArray.forEach((file) => {
       dispatcher({
-        type: 'LOADING',
-        payload: parseInt(e.loaded, 10),
+        type: 'FIRST_LOADING',
+        payload: {
+          size: file.size,
+          name: file.name,
+        },
       });
-    });
-    reader.addEventListener('loadend', (e) => {
-      console.log(`${e.type} - ${e.loaded}`);
-      dispatcher({
-        type: 'LOAD_END',
-        payload: e.loaded,
+      const reader = new FileReader();
+
+      reader.addEventListener('progress', (e) => {
+        dispatcher({
+          type: 'LOADING',
+          payload: {
+            currentProgress: parseInt(e.loaded, 10),
+            size: e.total,
+          },
+        });
       });
-    });
 
-    reader.addEventListener('load', (e) => {
-      console.log(`${e.type} - ${e.loaded}`);
-    });
+      reader.addEventListener('loadend', (e) => {
+        dispatcher({
+          type: 'LOAD_END',
+          payload: { currentProgress: parseInt(e.loaded, 10), size: e.total },
+        });
+      });
 
-    for (let i = 0; i < files.length; i++) {
-      reader.readAsText(files[i]);
-    }
+      reader.readAsText(file);
+    });
   };
 
-  console.log({ ...state });
+  console.log(state.files);
 
   const handleSubmit = (evt) => {
     evt.preventDefault();
   };
 
   const renderProgressBar = () => {
-    const { size, progress } = state;
-    const percentage = Math.trunc((progress * 100) / size) || 0;
-    console.log('percentage', percentage);
+    const { files } = state;
+
     return (
-      <div className="w-full h-8 ml-8 mr-8 rounded-lg">
-        <div
-          className="bg-red-500 h-8 rounded-lg"
-          style={{ width: `${percentage}%` }}
-        >
-          <span className="flex flex-row justify-end mr-2 items-center text-white h-8">
-            {`${percentage}%`}
-          </span>
-        </div>
-        <div className="w-3/6 h-8 rounded-lg"></div>
-      </div>
+      Object.keys(files) &&
+      Object.keys(files).map((fileKey) => {
+        const { progress, size } = files[fileKey];
+        const percentage = Math.trunc((progress * 100) / size) || 0;
+
+        return (
+          <li className="ml-8 mr-8 mb-4">
+            <div className="w-full h-8 rounded-lg">
+              <div
+                className="bg-red-500 h-8 rounded-lg"
+                style={{ width: `${percentage}%` }}
+              >
+                <span className="flex flex-row justify-end mr-2 items-center text-white h-8">
+                  {`${percentage}%`}
+                </span>
+              </div>
+            </div>
+          </li>
+        );
+      })
     );
   };
 
@@ -133,8 +165,8 @@ export default function Home() {
           <div className="flex flex-row justify-center mt-8">
             <h2>Files Loaded</h2>
           </div>
-          <div className="flex flex-row justify-center mt-8">
-            {renderProgressBar()}
+          <div className="flex flex-row justify-center mt-8 w-full">
+            <ul className="w-full">{renderProgressBar()}</ul>
           </div>
         </div>
       </div>
