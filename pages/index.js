@@ -33,7 +33,6 @@ const reducer = (state, action) => {
       } = action;
       const finalDifference =
         state.files[finalSize].size - currentFinalProgress;
-      console.log('STATEEEE======================', finalDifference);
       return {
         ...state,
         files: {
