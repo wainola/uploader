@@ -77,7 +77,24 @@ export default function Home() {
     evt.preventDefault();
   };
 
-  const renderProgressBar = () => {};
+  const renderProgressBar = () => {
+    const { size, progress } = state;
+    const percentage = Math.trunc((progress * 100) / size) || 0;
+    console.log('percentage', percentage);
+    return (
+      <div className="w-full h-8 ml-8 mr-8 rounded-lg">
+        <div
+          className="bg-red-500 h-8 rounded-lg"
+          style={{ width: `${percentage}%` }}
+        >
+          <span className="flex flex-row justify-end mr-2 items-center text-white h-8">
+            {`${percentage}%`}
+          </span>
+        </div>
+        <div className="w-3/6 h-8 rounded-lg"></div>
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col h-screen ml-8 mr-8">
@@ -116,7 +133,9 @@ export default function Home() {
           <div className="flex flex-row justify-center mt-8">
             <h2>Files Loaded</h2>
           </div>
-          <div className="flex flex-row justify-center mt-8"></div>
+          <div className="flex flex-row justify-center mt-8">
+            {renderProgressBar()}
+          </div>
         </div>
       </div>
     </div>
