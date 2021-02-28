@@ -30,7 +30,6 @@ export default function Home() {
     const {
       target: { files },
     } = evt;
-    console.log(files);
 
     dispatcher({ type: 'FIRST_LOADING', payload: files[0].size });
 
@@ -93,10 +92,11 @@ export default function Home() {
           </div>
         </div>
 
-        <div>
-          <div>
+        <div className="fle flex-col h-2/5 w-full mt-8 mb-8 border-2 border-green-400 rounded-lg">
+          <div className="flex flex-row justify-center mt-8">
             <h2>Files Loaded</h2>
           </div>
+          <div className="flex flex-row justify-center mt-8"></div>
         </div>
       </div>
     </div>
